@@ -18,6 +18,11 @@ namespace BpmBot
             timer.Elapsed += (sender, e) => bot.Start();
             timer.Start();
             Console.ReadKey();
+            timer.Stop();
+            timer.Close();
+            bot.Dispose();
+            Console.ReadKey();
+
         }
     }
 }
