@@ -1,22 +1,22 @@
 ﻿using BpmBot.DB;
+using BpmBot.Factory;
 using BpmBot.Model;
 using BpmBot.TelegramApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using Entity = BpmBot.DB.Model;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Entity = BpmBot.DB.Model;
 
 namespace BpmBot.Service
 {
     class Bot : IDisposable
     {
         private readonly APIService _service;
-        private readonly IConfigurationRoot _configuration;
         private readonly BotContext _context;
         private readonly object _lockObject = new object();
         private int _lastUpdateId = 0;
@@ -27,8 +27,8 @@ namespace BpmBot.Service
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json");
 
-            _configuration = builder.Build();
-            _service = new APIService(_configuration["token"], _configuration["url"]);
+            var configuration = builder.Build();
+            _service = new APIService(configuration["token"], configuration["url"]);
             var contectFactory = new DesignTimeDbContextFactory();
             _context = contectFactory.CreateDbContext(null);
             var global = _context.Globals.FirstOrDefault();
@@ -38,11 +38,13 @@ namespace BpmBot.Service
             }
         }
 
-        public void Start()
+        public async Task Start()
         {
             Console.WriteLine("Старт метода - ");
-            var response = _service.GetUpdatesAsync().Result.result.Where(t => t.message != null && _lastUpdateId < t.update_id);
-            foreach (var item in response)
+            var response = await _service.GetUpdatesAsync();
+
+            var updates = response.result.Where(t => t.message != null && _lastUpdateId < t.update_id);
+            foreach (var item in updates)
             {
                 Console.WriteLine($"Обработка сообщения - {item.message.message_id}");
                 Console.WriteLine($"Номер обновления - {item.update_id}");
@@ -58,12 +60,12 @@ namespace BpmBot.Service
         }
         private void ChooseMethod(Message message)
         {
-            if (message.new_chat_member != null && message.new_chat_member.is_bot)
-            {
-                AddedInChat(message.chat);
-            }
+            var command = CommandFactory.GetCommand(message);
+            command.Execute(message.chat);
+            
             if (message.text == "/reg" || message.text == "/reg@BlackTicketBot")
             {
+                CommandFactory.GetCommand(message).Execute(message.chat);
                 AddRegisterInGame(message.chat, message.from);
             }
             if (message.text == "/run" || message.text == "/run@BlackTicketBot")
@@ -108,7 +110,6 @@ namespace BpmBot.Service
         }
         private void AddRegisterInGame(Chat temp, From userFrom)
         {
-            AddedInChat(temp);
             var fullName = userFrom.first_name + " " + userFrom.last_name ?? "";
             var checkUser = _context.Users.Include(p => p.Chat).Where(t => t.TelegramId == userFrom.id && t.Chat.TelegramId == temp.id).ToList();
             if (!checkUser.Any())
@@ -147,7 +148,7 @@ namespace BpmBot.Service
                 }
                 else
                 {
-                    var candidateUser = _context.Users.Include(p => p.Chat).Where(t => t.Chat.TelegramId == chat.id && t.IsActive == true).ToList();
+                    var candidateUser = _context.Users.Include(p => p.Chat).Where(t => t.Chat.TelegramId == chat.id && t.IsActive).ToList();
                     var citationNumber = _context.Citations.GroupBy(t => t.Group).Count();
                     Random random = new Random();
                     int num = random.Next() % citationNumber;

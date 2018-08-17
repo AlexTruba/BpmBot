@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BpmBot.TelegramApi
@@ -11,11 +10,11 @@ namespace BpmBot.TelegramApi
     class APIService
     {
         private readonly string _baseUrl;
-        private static readonly HttpClient client = new HttpClient();
+        private readonly HttpClient _client = new HttpClient();
 
         public APIService(string token, string url)
         {
-            _baseUrl = url + $"/bot{token}/";
+            _baseUrl = $"{url}/bot{token}/";
         }
 
         public async Task<Response> GetUpdatesAsync()
@@ -80,13 +79,14 @@ namespace BpmBot.TelegramApi
         #region Private Method
         private async Task<string> GetResponseStringAsync(string methodName)
         {
-            var responseMessage = await client.GetAsync(_baseUrl + methodName);
+            var responseMessage = await _client.GetAsync(_baseUrl + methodName);
             return await responseMessage.Content.ReadAsStringAsync();
         }
+
         private async Task<string> PostResponseStringAsync(string methodName, Dictionary<string,string> par)
         {
             var content = new FormUrlEncodedContent(par);
-            var responseMessage = await client.PostAsync(_baseUrl + methodName, content);
+            var responseMessage = await _client.PostAsync(_baseUrl + methodName, content);
             return await responseMessage.Content.ReadAsStringAsync();
         }
         #endregion Private Method
