@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using BpmBot.DB.Repository;
+﻿using BpmBot.DB.Repository;
 using BpmBot.Model;
-
 using System.Threading.Tasks;
 
 namespace BpmBot.Service.Command.Impl
@@ -15,9 +13,9 @@ namespace BpmBot.Service.Command.Impl
             _chatRepository = chatRepository;
             _chatService = new ChatService(_chatRepository);
         }
-        public async Task Execute(Chat chat)
+        public async Task Execute(Message message)
         {
-            await _chatService.AddChatAsync(chat);
+            await _chatService.AddChatAsync(message);
         }
     }
 }

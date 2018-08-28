@@ -1,7 +1,6 @@
-﻿using System.Linq;
+﻿using BpmBot.DB.Repository;
 using BpmBot.Model;
 using System.Threading.Tasks;
-using BpmBot.DB.Repository;
 using ChatDb = BpmBot.DB.Model.Chat;
 
 namespace BpmBot.Service
@@ -13,17 +12,17 @@ namespace BpmBot.Service
         {
             _chatRepository = chatRepository;
         }
-        public async Task AddChatAsync(Chat chat)
+        public async Task AddChatAsync(Message message)
         {
-            var list = await _chatRepository.GetByTelegramId(chat.id);
+            var foundChat = await _chatRepository.GetByTelegramId(message.chat.id);
 
-            if (list.Any())
+            if (foundChat != null)
             {
                 ChatDb newChat = new ChatDb
                 {
-                    TelegramId = chat.id,
-                    Title = chat.title,
-                    Type = chat.type
+                    TelegramId = message.chat.id,
+                    Title = message.chat.title,
+                    Type = message.chat.type
                 };
 
                 await _chatRepository.AddAsync(newChat);

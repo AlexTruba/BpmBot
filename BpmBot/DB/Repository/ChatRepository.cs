@@ -1,6 +1,5 @@
 ﻿using BpmBot.DB.Model;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,24 +14,37 @@ namespace BpmBot.DB.Repository
             _context = contectFactory.CreateDbContext(null);
         }
 
-        public async Task<IEnumerable<Chat>> GetByTelegramId(int id)
+        public async Task<Chat> GetByTelegramId(int id)
         {
             return await _context
                 .Set<Chat>()
                 .Where(t => t.TelegramId == id)
-                .ToListAsync();
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false);
         }
+        public async Task<int> GetUsersCountInChat(int chatId)
+        {
+            return await _context
+                .Set<Chat>()
+                .AsNoTracking()
+                .Include(p => p.Users)
+                .CountAsync(t => t.TelegramId == chatId)
+                .ConfigureAwait(false);
+        }
+
         public async Task AddAsync(Chat chat)
         {
             await _context
                 .Set<Chat>()
-                .AddAsync(chat);
+                .AddAsync(chat)
+                .ConfigureAwait(false);
         }
 
         public async Task SaveAsync()
         {
             await _context
-                .SaveChangesAsync();
+                .SaveChangesAsync()
+                .ConfigureAwait(false);
         }
     }
 }

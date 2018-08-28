@@ -5,6 +5,6 @@ namespace BpmBot.Service.Command
 {
     public interface ICommand
     {
-        Task Execute(Chat chat);
+        Task Execute(Message message);
     }
 }

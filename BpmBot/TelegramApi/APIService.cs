@@ -25,7 +25,7 @@ namespace BpmBot.TelegramApi
             {
                 response = JsonConvert.DeserializeObject<Response>(responseString);
             }
-            catch (Exception){}
+            catch (Exception) { }
 
             return response;
         }
@@ -36,7 +36,7 @@ namespace BpmBot.TelegramApi
                     {
                         { "chat_id", id.ToString() }
                     }
-                );
+                ).ConfigureAwait(false);
             Response response = null;
             try
             {
@@ -73,21 +73,21 @@ namespace BpmBot.TelegramApi
                         { "chat_id", chatId.ToString() },
                         { "text", text }
                     }
-                );
+                ).ConfigureAwait(false);
         }
 
         #region Private Method
         private async Task<string> GetResponseStringAsync(string methodName)
         {
             var responseMessage = await _client.GetAsync(_baseUrl + methodName);
-            return await responseMessage.Content.ReadAsStringAsync();
+            return await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
 
-        private async Task<string> PostResponseStringAsync(string methodName, Dictionary<string,string> par)
+        private async Task<string> PostResponseStringAsync(string methodName, Dictionary<string, string> par)
         {
             var content = new FormUrlEncodedContent(par);
             var responseMessage = await _client.PostAsync(_baseUrl + methodName, content);
-            return await responseMessage.Content.ReadAsStringAsync();
+            return await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
         #endregion Private Method
     }

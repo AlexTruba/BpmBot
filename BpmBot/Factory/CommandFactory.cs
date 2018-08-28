@@ -23,12 +23,14 @@ namespace BpmBot.Factory
             {
                 case "/reg":
                 case "/reg@BlackTicketBot":
-                    //AddRegisterInGame(message.chat, message.from);
-                    break;
+                    return new RegCommand(new ChatRepository(), new UserRepository());
                 case "/run":
                 case "/run@BlackTicketBot":
-                    //RunGame(message.chat);
-                    break;
+                    return new RunCommand(
+                        new ResultRepository(), 
+                        new ChatRepository(),
+                        new UserRepository(), 
+                        new CitationRepository());
                 case "/result":
                 case "/result@BlackTicketBot":
                     //GetResult(message.chat);

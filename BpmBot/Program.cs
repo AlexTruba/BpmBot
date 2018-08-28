@@ -13,16 +13,14 @@ namespace BpmBot
     {
         static void Main(string[] args)
         {
-            Bot bot = new Bot();
-            Timer timer = new Timer(2000);
-            timer.Elapsed += (sender, e) => bot.Start();
-            timer.Start();
-            Console.ReadKey();
-            timer.Stop();
-            timer.Close();
-            bot.Dispose();
-            Console.ReadKey();
-
+            using (var timer = new Timer(2000))
+            {
+                Bot bot = new Bot();
+                timer.Elapsed += async (sender, e) => await bot.Start();
+                timer.Disposed += (sender, e) => bot.Dispose();
+                timer.Start();
+                Console.ReadKey();
+            }
         }
     }
 }
